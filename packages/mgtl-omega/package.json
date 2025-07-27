@@ -1,0 +1,15 @@
+{
+  "name": "mgtl-omega",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "fastify": "^4.27.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  }
+}
