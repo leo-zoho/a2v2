@@ -3,9 +3,14 @@
   "version": "1.0.0",
   "main": "a2_architecture_spec_v2.ts",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "test": "ts-node cli.ts"
   },
   "devDependencies": {
     "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/node": "^24.1.0",
+    "ts-node": "^10.9.2"
   }
 }
