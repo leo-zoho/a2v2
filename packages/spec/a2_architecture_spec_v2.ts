@@ -1,6 +1,5 @@
-// a2_architecture_spec_v2.ts
 
-// --- 1. Enhanced Enums & Data Contracts ---
+// --- 1. Enhanced Enums & Data Contracts (TypeScript parity with Python) ---
 export enum ModuleStatus {
   ACTIVE = "ACTIVE",
   ARCHIVED = "ARCHIVED",
@@ -15,9 +14,8 @@ export enum LifecycleState {
 }
 
 export interface BaseSchema {}
-
-export interface NormalizedGoalEnvelope extends BaseSchema {}
-export interface SwarmCharterRequest extends BaseSchema {}
+export class NormalizedGoalEnvelope implements BaseSchema {}
+export class SwarmCharterRequest implements BaseSchema {}
 
 export interface SubGoal extends BaseSchema {
   description: string;
@@ -60,7 +58,6 @@ export interface SubModule {
   algorithmicCore?: AlgorithmicCore;
   executionEnv?: ExecutionEnv;
   io?: Record<string, any>;
-  perfContract?: PerformanceContract;
 }
 
 export interface ModuleSpecification {
@@ -81,7 +78,7 @@ export interface ModuleSpecification {
   knownFlaws?: any[];
 }
 
-// --- 2. Refined Module Specifications ---
+// --- 2. Refined Module Specifications (add more modules as placeholders) ---
 export const MgtlOmegaSpec: ModuleSpecification = {
   module: "MGTL-Ω (Meta-Goal Translation Layer)",
   moduleId: "MGTL-OMEGA-V1.0",
@@ -101,7 +98,8 @@ export const MgtlOmegaSpec: ModuleSpecification = {
     processObjective: {
       type: "internal_service_call",
       description: "The primary entry point that initiates the full 11-stage cognitive relay.",
-      // inputSchema and outputSchema omitted for compatibility
+      inputSchema: NormalizedGoalEnvelope,
+      outputSchema: SwarmCharterRequest,
       perfContract: { p99LatencyMs: 500 },
     },
   },
@@ -155,7 +153,7 @@ export const SwarmManagerSpec: ModuleSpecification = {
     charterSwarm: {
       type: "internal_service_call",
       description: "Primary interface to create and deploy a new swarm.",
-      // inputSchema omitted for compatibility
+      inputSchema: SwarmCharterRequest,
       perfContract: { p99LatencyMs: 200 },
     },
   },
@@ -183,22 +181,74 @@ export const SwarmManagerSpec: ModuleSpecification = {
   knownFlaws: [],
 };
 
+// Placeholders for additional modules (expand as needed)
+export const ObjectiveHubSpec: ModuleSpecification = {
+  module: "ObjectiveHub",
+  moduleId: "OBJ-HUB-V1.2",
+  version: "1.2",
+  status: ModuleStatus.ACTIVE,
+  lifecycleState: LifecycleState.READY,
+  description: "Central hub for receiving and normalizing objectives.",
+  purpose: "Acts as the entry point for new objectives.",
+  responsibilities: ["Receive objectives", "Normalize and validate input"],
+  triggers: ["External API call"],
+  interfaces: {},
+  subModules: {},
+  constraints: [],
+  dependencies: [],
+};
+
+export const RegistriesSpec: ModuleSpecification = {
+  module: "Registries",
+  moduleId: "REGISTRIES-V1.0",
+  version: "1.0",
+  status: ModuleStatus.ACTIVE,
+  lifecycleState: LifecycleState.READY,
+  description: "Service registry and lookup.",
+  purpose: "Maintains registry of agents, modules, and resources.",
+  responsibilities: ["Lookup", "Registration", "Discovery"],
+  triggers: ["Lookup request"],
+  interfaces: {},
+  subModules: {},
+  constraints: [],
+  dependencies: [],
+};
+
+export const ResourceAllocatorSpec: ModuleSpecification = {
+  module: "ResourceAllocator",
+  moduleId: "RESOURCE-ALLOCATOR-V1.0",
+  version: "1.0",
+  status: ModuleStatus.ACTIVE,
+  lifecycleState: LifecycleState.READY,
+  description: "Allocates resources to swarms and modules.",
+  purpose: "Handles resource allocation requests.",
+  responsibilities: ["Allocate resources", "Track usage"],
+  triggers: ["Allocation request"],
+  interfaces: {},
+  subModules: {},
+  constraints: [],
+  dependencies: [],
+};
+
 // --- 3. Registry & Diagnostics ---
 export const A2SystemRegistry: Record<string, ModuleSpecification> = {
   [MgtlOmegaSpec.moduleId]: MgtlOmegaSpec,
   [SwarmManagerSpec.moduleId]: SwarmManagerSpec,
+  [ObjectiveHubSpec.moduleId]: ObjectiveHubSpec,
+  [RegistriesSpec.moduleId]: RegistriesSpec,
+  [ResourceAllocatorSpec.moduleId]: ResourceAllocatorSpec,
 };
 
 export function validateRegistry(registry: Record<string, ModuleSpecification>, showSLOWarnings = false): string[] {
   const errors: string[] = [];
   const allIds = Object.keys(registry);
   for (const [moduleId, spec] of Object.entries(registry)) {
-    if (Object.keys(spec.subModules).length === 0) {
+    if (!spec.subModules || Object.keys(spec.subModules).length === 0) {
       errors.push(`[WARNING] ${moduleId}: no subModules defined.`);
     }
-    for (const [name, sm] of Object.entries(spec.subModules)) {
-      if (showSLOWarnings && sm.perfContract == null) {
-        errors.push(`[INFO]    ${moduleId}.${name}: missing submodule SLO.`);
+    for (const [name, sm] of Object.entries(spec.subModules || {})) {
+      if (showSLOWarnings && !sm.algorithmicCore) {
+        errors.push(`[INFO]    ${moduleId}.${name}: missing algorithmicCore detail.`);
       }
     }
     for (const dep of spec.dependencies) {
